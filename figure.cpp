@@ -10,18 +10,18 @@ void Figure::Render()
     }
 
     for (auto triangle: structure.modTriangle) {
-        painter->setPen(QPen(triangle.color, 3));
-//        DrawFilledTriangle(
-//                    canvasPoints[triangle.triangle[0]],
-//                    canvasPoints[triangle.triangle[1]],
-//                    canvasPoints[triangle.triangle[2]]
-//                    );
-//        painter->setPen(QPen(Qt::black, 1));
-        DrawWireframeTriangle(
+        painter->setPen(QPen(triangle.color, 1));
+        DrawFilledTriangle(
                     canvasPoints[triangle.triangle[0]],
                     canvasPoints[triangle.triangle[1]],
                     canvasPoints[triangle.triangle[2]]
                     );
+        painter->setPen(QPen(Qt::black, 1));
+//        DrawWireframeTriangle(
+//                    canvasPoints[triangle.triangle[0]],
+//                    canvasPoints[triangle.triangle[1]],
+//                    canvasPoints[triangle.triangle[2]]
+//                    );
     }
 
     for (auto point: structure.points) {

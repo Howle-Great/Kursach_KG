@@ -36,7 +36,6 @@ public:
     void Move(QVector3D shift);    // перенос всего объекта
     void RotateX(float angle);  // разворот объекта
     void RotateY(float angle);
-    void RotateZ(float angle);
 
 private:
     TriangPoints structure; // структура объекта
@@ -45,13 +44,13 @@ private:
     QSize canvas;   // Холст на котором все отображается
     const float distans;  // Растояние от (0, 0, 0) до virtualCanvas
 
-
+    void RotateZ(float angle);
     QPoint InCanvasDemention(QVector3D point) {    // Переводит все в координаты канваса
           return ViewportToCanvas(point.x() * distans / point.z(), point.y() * distans / point.z());
     }
 
     QPoint ViewportToCanvas(float x, float y) {    // Масштабирование координат для отображения на настоящем конвасе
-          return QPoint((x * canvas.width() / virtualCanvas.width() + canvas.width()/2), (y * canvas.height() / virtualCanvas.height() + canvas.height()/2));
+          return QPoint((x * canvas.width() / virtualCanvas.width() + canvas.width()/2), (-y * canvas.height() / virtualCanvas.height() + canvas.height()/2));
     }
 
     void DrawWireframeTriangle(QPoint P0, QPoint P1, QPoint P2) {
@@ -64,22 +63,61 @@ private:
         painter->drawLine(P2.x(), P2.y(), P0.x(), P0.y());
     }
 
-    vector<QPoint> Interpolate (int y0, int x0, int y1, int x1) {
-        // Определяет точки для рисования прямой между 2 точками
-        if (y0 == y1) {
-           return { QPoint(x0, y0) };
-        }
+    vector<QPoint> Interpolate (int x1, int y1, int x2, int y2) {
         vector<QPoint> values;
-        float dx = (x1 - x0),
-              dy = (y1 - y0);
-        cout << "A: " << dx << " " << dy <<"\n";
-        float dX = x0;
-        float dY = y0;
-        for (int i = y0; i < y1; i++) {
-            values.push_back(QPoint(dX, dY));
-            dX += dx;
-            dY += dy;
+        // Определяет точки для рисования прямой между 2 точками
+        if (x1 == x2) {
+           int yMin = y1 < y2 ? y1 : y2;
+           int yMax = y1 > y2 ? y1 : y2;
+           for (int y = yMin; y <= yMax; y++) { values.push_back(QPoint(x1, y)); }
+           return values;
         }
+
+        if (y1 == y2) {
+//           int xMin = x1 < x2 ? x1 : x2;
+//           int xMax = xMin == x1 ? x2 : x1;
+//           for (int x = xMin; x < xMax; x++) { values.push_back(QPoint(x, y2)); }
+//           return values;
+            return {QPoint(x1,y1)};
+        }
+
+        const int deltaX = abs(x2 - x1);
+        const int deltaY = abs(y2 - y1);
+        const int signX = x1 < x2 ? 1 : -1;
+        const int signY = y1 < y2 ? 1 : -1;
+        //
+        int error = deltaX - deltaY;
+        //
+        QPoint lastPoint = QPoint(x1, y1);
+        bool stateFistRound = true;
+        while(x1 != x2 || y1 != y2)
+        {
+            if (lastPoint.y() == y1 && stateFistRound == false) {
+                if (lastPoint.x() < x1) {
+                    values.at(values.size() - 1) = QPoint(x1, y1);
+
+                }
+            } else {
+                values.push_back(QPoint(x1, y1));
+            }
+
+            lastPoint = QPoint(x1, y1);
+
+            const int error2 = error * 2;
+            //
+            if (error2 > -deltaY)
+            {
+                error -= deltaY;
+                x1 += signX;
+            }
+            if (error2 < deltaX)
+            {
+                error += deltaX;
+                y1 += signY;
+            }
+            stateFistRound = false;
+        }
+        values.push_back(QPoint(x2, y2));
         return values;
     }
 
@@ -99,11 +137,19 @@ private:
 
 
         // Вычисление координат x рёбер треугольника
-        vector<QPoint> x01 = Interpolate(P0.y(), P0.x(), P1.y(), P1.x());
-        vector<QPoint> x12 = Interpolate(P1.y(), P1.x(), P2.y(), P2.x());
-        vector<QPoint> x02 = Interpolate(P0.y(), P0.x(), P2.y(), P2.x());
-
-        // Конкатенация коротких сторон
+        vector<QPoint> x01 = Interpolate(P0.x(), P0.y(), P1.x(), P1.y());
+        vector<QPoint> x12 = Interpolate(P1.x(), P1.y(), P2.x(), P2.y());
+        vector<QPoint> x02 = Interpolate(P0.x(), P0.y(), P2.x(), P2.y());
+//        cout << "Просчитан 1 треугольник" << endl;
+//        cout << "\nx01\n";
+//        for (auto x: x01) {cout << "( " << x.x() << ", " << x.y() << " ), " << " ";}
+//        cout << "\nx12\n";
+//        for (auto x: x12) {cout << "( " << x.x() << ", " << x.y() << " ), " << " ";}
+//        cout << "\nx02\n";
+//        for (auto x: x02) {cout << "( " << x.x() << ", " << x.y() << " ), " << " ";}
+//        cout << endl;
+//        return;
+//      Конкатенация коротких сторон
         vector<QPoint> x012;
         copy(x01.begin(), x01.end(), std::back_inserter(x012));
         copy(x12.begin(), x12.end(), std::back_inserter(x012));
@@ -120,22 +166,16 @@ private:
             x_left = x012;
             x_right = x02;
         }
-//        for (auto el:x_left) {cout << "Left: " << el << endl;}
-//        cout << "\nx_right\n";
-//        for (auto el:x_right) {cout << "Right: " << el << endl;}
 
+    cout <<endl;
+//       Отрисовка горизонтальных отрезков
 
-//        cout << "Точки" << endl;
-        // Отрисовка горизонтальных отрезков
-        for (int y = P0.y(); y < P2.y(); y++) {
-            for (int x = x_left[y - P0.y()].x(); x < x_right[y - P0.y()].x(); x++) {
-                painter->drawPoint(QPoint(x_left[y - P0.y()].x(), x_left[y - P0.y()].y()));
-                cout << "( " << x_left[y - P0.y()].x() << ", " << x_left[y - P0.y()].y() << " ), ";
-            }
-//            int tmp = x_left[y - P0.y()];
-//            cout << tmp << "\n";
+        for (int y = P0.y(); y <= P2.y(); y++) {
+            cout << "( " << x_left[y - P0.y()].x() << ", " << x_left[y - P0.y()].y() << " ), "
+                 << "( " << x_right[y - P0.y()].x() << ", " << x_right[y - P0.y()].y() << " ), ";
+            painter->drawLine(x_left[y - P0.y()].x(), x_left[y - P0.y()].y() , x_right[y - P0.y()].x(), x_right[y - P0.y()].y() );
         }
-
+        cout << "OUT" << endl;
 
     }
 
