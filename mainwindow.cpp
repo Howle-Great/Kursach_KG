@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     QSize Canvas(900, 900);
-    QSize VirtualCanvas(2, 2);
+    QSize VirtualCanvas(1, 1);
     const float DistanceToVirtualCanvas = 1;
 
     ui->setupUi(this);
@@ -54,18 +54,18 @@ MainWindow::MainWindow(QWidget *parent) :
         },
         {
 
-//            {{0, 1, 2}, Qt::red},
-//            {{0, 2, 3}, Qt::gray},
-//            {{4, 0, 3}, Qt::green},
-//            {{4, 3, 7}, Qt::green},
-//            {{5, 4, 7}, Qt::blue},
-//            {{5, 7, 6}, Qt::blue},
-//            {{1, 5, 6}, Qt::yellow},
-//            {{1, 6, 2}, Qt::yellow},
+            {{0, 1, 2}, Qt::red},
+            {{0, 2, 3}, Qt::gray},
+            {{4, 0, 3}, Qt::green},
+            {{4, 3, 7}, Qt::green},
+            {{5, 4, 7}, Qt::blue},
+            {{5, 7, 6}, Qt::blue},
+            {{1, 5, 6}, Qt::yellow},
+            {{1, 6, 2}, Qt::yellow},
             {{4, 5, 1}, Qt::magenta},
             {{4, 1, 0}, Qt::magenta},
-//            {{2, 6, 7}, Qt::gray},
-//            {{2, 7, 3}, Qt::gray}
+            {{2, 6, 7}, Qt::gray},
+            {{2, 7, 3}, Qt::gray}
 
 
 
@@ -91,12 +91,11 @@ MainWindow::MainWindow(QWidget *parent) :
 //    fig->Move({150, 150, 150});
 //    fig->Move({-100, -50, 20});
 
-//    fig->RotateY(45);
-//    fig->RotateX(45);
-//    fig->RotateZ(45);/
+    fig->RotateY(25);
+//    fig->RotateX(5);
 
 //    fig->Move({0, 0, 550});
-    fig->Move({1, 1, 7});
+    fig->Move({5, 5, 15});
     fig->Render();
 
     ui->draw_label->setPixmap(*scene);

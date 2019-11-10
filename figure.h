@@ -45,12 +45,12 @@ private:
     const float distans;  // Растояние от (0, 0, 0) до virtualCanvas
 
     void RotateZ(float angle);
-    QPoint InCanvasDemention(QVector3D point) {    // Переводит все в координаты канваса
-          return ViewportToCanvas(point.x() * distans / point.z(), point.y() * distans / point.z());
+    QVector3D InCanvasDemention(QVector3D point) {    // Переводит все в координаты канваса
+          return ViewportToCanvas(point.x() * distans / point.z(), point.y() * distans / point.z(), point.z());
     }
 
-    QPoint ViewportToCanvas(float x, float y) {    // Масштабирование координат для отображения на настоящем конвасе
-          return QPoint((x * canvas.width() / virtualCanvas.width() + canvas.width()/2), (-y * canvas.height() / virtualCanvas.height() + canvas.height()/2));
+    QVector3D ViewportToCanvas(float x, float y, float z) {    // Масштабирование координат для отображения на настоящем конвасе
+          return QVector3D((x * canvas.width() / virtualCanvas.width() + canvas.width()/2), (-y * canvas.height() / virtualCanvas.height() + canvas.height()/2), z);
     }
 
     void DrawWireframeTriangle(QPoint P0, QPoint P1, QPoint P2) {
@@ -63,120 +63,39 @@ private:
         painter->drawLine(P2.x(), P2.y(), P0.x(), P0.y());
     }
 
-    vector<QPoint> Interpolate (int x1, int y1, int x2, int y2) {
-        vector<QPoint> values;
-        // Определяет точки для рисования прямой между 2 точками
-        if (x1 == x2) {
-           int yMin = y1 < y2 ? y1 : y2;
-           int yMax = y1 > y2 ? y1 : y2;
-           for (int y = yMin; y <= yMax; y++) { values.push_back(QPoint(x1, y)); }
-           return values;
-        }
+    void DrawFilledTriangle(QVector3D P0, QVector3D P1, QVector3D P2, int* zbuffer) {
+        if (P0.y()==P1.y() && P0.y()==P2.y()) return; // если точка
+        // сортируем точки по вертикали, P0, P1, P2 от меньшего к большему
+        if (P0.y()>P1.y()) std::swap(P0, P1);
+        if (P0.y()>P2.y()) std::swap(P0, P2);
+        if (P1.y()>P2.y()) std::swap(P1, P2);
+        int total_height = P2.y()-P0.y();
+        for (int i=0; i<total_height; i++) {
+            bool second_half = i>P1.y()-P0.y() || P1.y()==P0.y();
 
-        if (y1 == y2) {
-//           int xMin = x1 < x2 ? x1 : x2;
-//           int xMax = xMin == x1 ? x2 : x1;
-//           for (int x = xMin; x < xMax; x++) { values.push_back(QPoint(x, y2)); }
-//           return values;
-            return {QPoint(x1,y1)};
-        }
-
-        const int deltaX = abs(x2 - x1);
-        const int deltaY = abs(y2 - y1);
-        const int signX = x1 < x2 ? 1 : -1;
-        const int signY = y1 < y2 ? 1 : -1;
-        //
-        int error = deltaX - deltaY;
-        //
-        QPoint lastPoint = QPoint(x1, y1);
-        bool stateFistRound = true;
-        while(x1 != x2 || y1 != y2)
-        {
-            if (lastPoint.y() == y1 && stateFistRound == false) {
-                if (lastPoint.x() < x1) {
-                    values.at(values.size() - 1) = QPoint(x1, y1);
-
-                }
+            int segment_height;
+            if (second_half) {
+                segment_height = P2.y() - P1.y();
             } else {
-                values.push_back(QPoint(x1, y1));
+                segment_height = P1.y() - P0.y();
             }
 
-            lastPoint = QPoint(x1, y1);
+            float alpha = (float)i/total_height;
+            float beta  = (float)(i-(second_half ? P1.y()-P0.y() : 0))/segment_height; // be careful: with above conditions no division by zero here
+            QVector3D A = P0 + QVector3D(P2-P0)*alpha;  // текущий сдвиг по осям x, y
+            QVector3D B = second_half ? P1 + QVector3D(P2-P1)*beta : P0 + QVector3D(P1-P0)*beta;
 
-            const int error2 = error * 2;
-            //
-            if (error2 > -deltaY)
-            {
-                error -= deltaY;
-                x1 += signX;
+            if (A.x() > B.x()) std::swap(A, B);
+            for (int j=A.x(); j<=B.x(); j++) {
+                float phi = B.x()==A.x() ? 1. : (float)(j-A.x())/(float)(B.x()-A.x());
+                QVector3D P = QVector3D(A) + QVector3D(B-A)*phi;
+                int idx = P.x() + P.y() * canvas.width();
+                if (zbuffer[idx] < P.z()) {
+                    zbuffer[idx] = P.z();
+                    painter->drawPoint(P.x(), P.y());
+                }
             }
-            if (error2 < deltaX)
-            {
-                error += deltaX;
-                y1 += signY;
-            }
-            stateFistRound = false;
         }
-        values.push_back(QPoint(x2, y2));
-        return values;
-    }
-
-    void DrawFilledTriangle(QPoint P0, QPoint P1, QPoint P2) {
-        cout << "\nДо обработки" << "\n"
-             << "( " << P0.x() << ", " << P0.y() << " ), "
-             << "( " << P1.x() << ", " << P1.y() << " ), "
-             << "( " << P2.x() << ", " << P2.y() << " ), "<< endl;
-        // Сортировка точек так, что y0 <= y1 <= y2
-        if (P1.y() < P0.y()) { swap(P1, P0); }
-        if (P2.y() < P0.y()) { swap(P2, P0); }
-        if (P2.y() < P1.y()) { swap(P2, P1); }
-        cout << "После обработки" << "\n"
-             << "( " << P0.x() << ", " << P0.y() << " ), "
-             << "( " << P1.x() << ", " << P1.y() << " ), "
-             << "( " << P2.x() << ", " << P2.y() << " ), "<< endl;
-
-
-        // Вычисление координат x рёбер треугольника
-        vector<QPoint> x01 = Interpolate(P0.x(), P0.y(), P1.x(), P1.y());
-        vector<QPoint> x12 = Interpolate(P1.x(), P1.y(), P2.x(), P2.y());
-        vector<QPoint> x02 = Interpolate(P0.x(), P0.y(), P2.x(), P2.y());
-//        cout << "Просчитан 1 треугольник" << endl;
-//        cout << "\nx01\n";
-//        for (auto x: x01) {cout << "( " << x.x() << ", " << x.y() << " ), " << " ";}
-//        cout << "\nx12\n";
-//        for (auto x: x12) {cout << "( " << x.x() << ", " << x.y() << " ), " << " ";}
-//        cout << "\nx02\n";
-//        for (auto x: x02) {cout << "( " << x.x() << ", " << x.y() << " ), " << " ";}
-//        cout << endl;
-//        return;
-//      Конкатенация коротких сторон
-        vector<QPoint> x012;
-        copy(x01.begin(), x01.end(), std::back_inserter(x012));
-        copy(x12.begin(), x12.end(), std::back_inserter(x012));
-
-        // Определяем, какая из сторон левая и правая
-        vector<QPoint> x_left;
-        vector<QPoint> x_right;
-        float medium = x012.size() / 2;
-
-        if (x02[medium].x() < x012[medium].x()) {
-            x_left = x02;
-            x_right = x012;
-        } else {
-            x_left = x012;
-            x_right = x02;
-        }
-
-    cout <<endl;
-//       Отрисовка горизонтальных отрезков
-
-        for (int y = P0.y(); y <= P2.y(); y++) {
-            cout << "( " << x_left[y - P0.y()].x() << ", " << x_left[y - P0.y()].y() << " ), "
-                 << "( " << x_right[y - P0.y()].x() << ", " << x_right[y - P0.y()].y() << " ), ";
-            painter->drawLine(x_left[y - P0.y()].x(), x_left[y - P0.y()].y() , x_right[y - P0.y()].x(), x_right[y - P0.y()].y() );
-        }
-        cout << "OUT" << endl;
-
     }
 
 };

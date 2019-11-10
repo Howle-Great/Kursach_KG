@@ -4,17 +4,20 @@
 void Figure::Render()
 {    
 
-    vector<QPoint> canvasPoints;    // Массив все точек фигуры на кавасе
+    vector<QVector3D> canvasPoints;    // Массив все точек фигуры на кавасе
     for (auto point: structure.points) {
         canvasPoints.push_back(InCanvasDemention(point));
     }
 
     for (auto triangle: structure.modTriangle) {
+        int *zbuffer = new int[canvas.width() * canvas.height()];
+
         painter->setPen(QPen(triangle.color, 1));
         DrawFilledTriangle(
                     canvasPoints[triangle.triangle[0]],
                     canvasPoints[triangle.triangle[1]],
-                    canvasPoints[triangle.triangle[2]]
+                    canvasPoints[triangle.triangle[2]],
+                    zbuffer
                     );
         painter->setPen(QPen(Qt::black, 1));
 //        DrawWireframeTriangle(
