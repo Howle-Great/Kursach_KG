@@ -52,11 +52,7 @@ private:
           return QVector3D((x * canvas.width() / virtualCanvas.width() + canvas.width()/2), (-y * canvas.height() / virtualCanvas.height() + canvas.height()/2), z);
     }
 
-    void DrawWireframeTriangle(QPoint P0, QPoint P1, QPoint P2) {
-        cout << "Ghjcnj hbcjdrf\n";
-        cout << "( " << P0.x() << ", " << P0.y() << " ), "
-             << "( " << P1.x() << ", " << P1.y() << " ), "
-             << "( " << P2.x() << ", " << P2.y() << " ), "<< endl;
+    void DrawWireframeTriangle(QVector3D P0, QVector3D P1, QVector3D P2) {
         painter->drawLine(P0.x(), P0.y(), P1.x(), P1.y());
         painter->drawLine(P1.x(), P1.y(), P2.x(), P2.y());
         painter->drawLine(P2.x(), P2.y(), P0.x(), P0.y());
@@ -68,6 +64,10 @@ private:
         if (P0.y()>P1.y()) std::swap(P0, P1);
         if (P0.y()>P2.y()) std::swap(P0, P2);
         if (P1.y()>P2.y()) std::swap(P1, P2);
+        cout << "( " << P0.x() << ", " << P0.y() << " ), "
+             << "( " << P1.x() << ", " << P1.y() << " ), "
+             << "( " << P2.x() << ", " << P2.y() << " ), "<< endl;
+
         int total_height = roundf(P2.y() - P0.y());
         for (int i = 0; i < total_height; i++) {
             bool second_half = i > roundf(P1.y() - P0.y()) || P1.y()==P0.y();
@@ -88,9 +88,9 @@ private:
             for (int j = roundf(A.x()); j <= roundf(B.x()); j++) {
                 float phi = B.x() == A.x() ? 1. : (float)(j - A.x()) / (float)(B.x() - A.x());
                 QVector3D P = QVector3D(A) + QVector3D(B-A)*phi;
-                if (zbuffer[int(roundf(P.x()))][int(roundf(P.y()))] < (P.z())) {
+                if (zbuffer[int(roundf(P.x()))][int(roundf(P.y()))] > (P.z())) {
                     zbuffer[int(roundf(P.x()))][int(roundf(P.y()))] = (P.z());
-                    painter->drawPoint((P.x()), (P.y()));
+                    painter->drawPoint(int(roundf(P.x())), int(roundf(P.y())));
 //                    cout << "( " << roundf(P.x()) << ", " << roundf(P.y()) << " ), ";
                 }
             }

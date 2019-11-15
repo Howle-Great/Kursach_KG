@@ -13,7 +13,7 @@ void Figure::Render()
     for (int var = 0; var < canvas.width(); var++) {
         zbuffer[var] = new float[canvas.height()];
         for (int i = 0; i < canvas.height(); i++) {
-            zbuffer[var][i] = std::numeric_limits<float>::min();
+            zbuffer[var][i] = std::numeric_limits<float>::max();
         }
     }
 
@@ -27,7 +27,7 @@ void Figure::Render()
                     canvasPoints[triangle.triangle[2]],
                     zbuffer
                     );
-        painter->setPen(QPen(Qt::black, 1));
+//        painter->setPen(QPen(Qt::black, 1));
 //        DrawWireframeTriangle(
 //                    canvasPoints[triangle.triangle[0]],
 //                    canvasPoints[triangle.triangle[1]],
@@ -38,9 +38,6 @@ void Figure::Render()
         delete zbuffer[var];
     }
     delete zbuffer;
-//    for (auto point: structure.points) {
-//        std::cout << "( " << point.x() << ", " << point.y() << ", " << point.z() << " )" << std::endl;
-//    }
 
 }
 
@@ -58,27 +55,29 @@ void Figure::Move(QVector3D shift)
 void Figure::RotateX(float angle)
 {
     for (auto i = 0; i < structure.points.size(); i++) {
-        structure.points[i].setX(structure.points[i].x());
-        structure.points[i].setY(structure.points[i].y()*cos(angle) + structure.points[i].z()*sin(angle));
-        structure.points[i].setZ(-structure.points[i].y()*sin(angle) + structure.points[i].z()*cos(angle));
+        QVector3D tmp = structure.points[i];
+        structure.points[i].setX(tmp.x());
+        structure.points[i].setY(tmp.y()*cos(angle) + tmp.z()*sin(angle));
+        structure.points[i].setZ(-tmp.y()*sin(angle) + tmp.z()*cos(angle));
     }
 }
 
 void Figure::RotateY(float angle)
 {
     for (auto i = 0; i < structure.points.size(); i++) {
-
-        structure.points[i].setX(structure.points[i].x()*cos(angle) + structure.points[i].z()*sin(angle));
-        structure.points[i].setY(structure.points[i].y());
-        structure.points[i].setZ(-structure.points[i].x()*sin(angle) + structure.points[i].z()*cos(angle));
+        QVector3D tmp = structure.points[i];
+        structure.points[i].setX(tmp.x()*cos(angle) + tmp.z()*sin(angle));
+        structure.points[i].setY(tmp.y());
+        structure.points[i].setZ(-tmp.x()*sin(angle) + tmp.z()*cos(angle));
     }
 }
 
 void Figure::RotateZ(float angle)
 {
     for (auto i = 0; i < structure.points.size(); i++) {
-        structure.points[i].setX(structure.points[i].x()*cos(angle) - structure.points[i].y()*sin(angle));
-        structure.points[i].setY(-structure.points[i].x()*sin(angle) + structure.points[i].y()*cos(angle));
-        structure.points[i].setZ(structure.points[i].z());
+        QVector3D tmp = structure.points[i];
+        structure.points[i].setX(tmp.x()*cos(angle) - tmp.y()*sin(angle));
+        structure.points[i].setY(-tmp.x()*sin(angle) + tmp.y()*cos(angle));
+        structure.points[i].setZ(tmp.z());
     }
 }

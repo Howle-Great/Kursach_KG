@@ -72,7 +72,16 @@ MainWindow::MainWindow(QWidget *parent) :
 //    GenerateCylinder(1, 1, 0, 0, 360);
 
 //    painter->setPen(QPen(Qt::black));
+    Figure* fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
+//    fig->Move({150, 150, 150});
+//    fig->Move({-100, -50, 20});
 
+//    fig->RotateY(i*M_PI/180);
+//    fig->RotateX(5);
+
+//    fig->Move({0, 0, 550});
+    fig->Move({0, 0, 15});
+    fig->Render();
 
     ui->draw_label->setPixmap(*scene);
 
@@ -95,10 +104,10 @@ void MainWindow::on_pushButton_clicked() {
 //    fig->Move({-100, -50, 20});
 
     fig->RotateY(i++*M_PI/180);
-//    fig->RotateX(5);
+    fig->RotateX(5);
 
 //    fig->Move({0, 0, 550});
-    fig->Move({3, 4, 15});
+    fig->Move({0, 0, 15});
     fig->Render();
 //    delete fig;
 
