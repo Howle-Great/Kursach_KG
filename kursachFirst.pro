@@ -19,13 +19,11 @@ SOURCES += \
     figure.cpp \
     main.cpp \
     mainwindow.cpp \
-    painter.cpp \
     parallelepipe.cpp
 
 HEADERS += \
     figure.h \
     mainwindow.h \
-    painter.h \
     parallelepipe.h \
     triang_points.h
 

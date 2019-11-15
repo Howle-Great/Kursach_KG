@@ -1,5 +1,5 @@
 #include "figure.h"
-#include <iostream>
+//#include <iostream>
 
 void Figure::Render()
 {    
@@ -9,8 +9,16 @@ void Figure::Render()
         canvasPoints.push_back(InCanvasDemention(point));
     }
 
+    float **zbuffer = new float*[canvas.width()];
+    for (int var = 0; var < canvas.width(); var++) {
+        zbuffer[var] = new float[canvas.height()];
+        for (int i = 0; i < canvas.height(); i++) {
+            zbuffer[var][i] = std::numeric_limits<float>::min();
+        }
+    }
+
+
     for (auto triangle: structure.modTriangle) {
-        int *zbuffer = new int[canvas.width() * canvas.height()];
 
         painter->setPen(QPen(triangle.color, 1));
         DrawFilledTriangle(
@@ -26,10 +34,13 @@ void Figure::Render()
 //                    canvasPoints[triangle.triangle[2]]
 //                    );
     }
-
-    for (auto point: structure.points) {
-//        std::cout << "( " << point.x() << ", " << point.y() << ", " << point.z() << " )" << std::endl;
+    for (int var = 0; var < canvas.width(); var++) {
+        delete zbuffer[var];
     }
+    delete zbuffer;
+//    for (auto point: structure.points) {
+//        std::cout << "( " << point.x() << ", " << point.y() << ", " << point.z() << " )" << std::endl;
+//    }
 
 }
 

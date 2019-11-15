@@ -2,20 +2,59 @@
 #include "ui_mainwindow.h"
 #include <iostream>
 
-#include <QSize>
 
-//#include "painter.h"
-#include "figure.h"
-#include "triang_points.h"
-#include "parallelepipe.h"
+void GenerateCylinder(float radius, float height, int Cx, int Cy, int grad) {
+    // в верхнем круге центр - 0я точка
+    // в нижнем круге центр - (grad + 1)я точка
+    vector<QVector3D> points(2*(grad + 1));
+    vector<Triangle> treangles(4*grad);
+    float x;
+    float y;
+    float z = 0;
+    // генерируем передний круг
+    points[0] = QVector3D(Cx, Cy, z);
+    for (int var = 0; var < grad; var++) {
+        x = Cx + radius*cos(var*(360/grad));
+        y = Cy + radius*sin(var*(360/grad));
+        points.push_back(QVector3D(x, y, z));
+    }
+    // генерируем задний круг
+    z = height;
+    points[grad + 1] = QVector3D(Cx, Cy, z);
+    for (int var = 0; var < grad; var++) {
+        x = Cx + radius*cos(var*(360/grad));
+        y = Cy + radius*sin(var*(360/grad));
+        points.push_back(QVector3D(x, y, z));
+    }
+    // соединяем треугольниками верхний круг
+    int centerPoint = 0;
+    for (int var = 1; var < grad; var++) {
+        treangles.push_back({{centerPoint, var, var + 1}, Qt::green});
+    }
+    // соединяем треугольниками нижний круг
+    centerPoint = grad;
+    for (int var = grad + 1; var < 2*grad; var++) {
+        treangles.push_back({{centerPoint, var, var + 1}, Qt::red});
+    }
+    // соединяем треугольниками боковую часть цилиндра
+    for (int var = grad + 1; var < 2*grad; var++) {
+        treangles.push_back({{var, var + 1, var + grad + 1}, Qt::blue});
+        treangles.push_back({{var + grad + 1, var + grad + 2, var + 1}, Qt::blue});
+    }
+
+    // Вывод в консоль
+    std::cout << "sadfsf" << endl;
+    std::cout << "Color: " << Qt::blue << endl;
+//    for (int var = 0; var < points.size(); var++) {
+
+//    }
+}
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    QSize Canvas(900, 900);
-    QSize VirtualCanvas(1, 1);
-    const float DistanceToVirtualCanvas = 1;
+
 
     ui->setupUi(this);
 
@@ -30,73 +69,10 @@ MainWindow::MainWindow(QWidget *parent) :
     painter = new QPainter(scene);
     painter->setPen(QPen(Qt::black));
 //    painter->drawLine(0,0,200,200);
-    TriangPoints TP_Parallelepipe = {
-        {
-//            {1,1,1},
-//            {1,1,100},
-//            {100,1,100},
-//            {100,1,1},
-//            {1,100,1},
-//            {1,100,100},
-//            {100,100,100},
-//            {100,100,1}
+//    GenerateCylinder(1, 1, 0, 0, 360);
 
-
-
-            {1,  1,  1},
-            {-1,  1,  1},
-            {-1, -1,  1},
-            {1, -1,  1},
-            {1,  1, -1},
-            {-1,  1, -1},
-            {-1, -1, -1},
-            {1, -1, -1}
-        },
-        {
-
-            {{0, 1, 2}, Qt::red},
-            {{0, 2, 3}, Qt::gray},
-            {{4, 0, 3}, Qt::green},
-            {{4, 3, 7}, Qt::green},
-            {{5, 4, 7}, Qt::blue},
-            {{5, 7, 6}, Qt::blue},
-            {{1, 5, 6}, Qt::yellow},
-            {{1, 6, 2}, Qt::yellow},
-            {{4, 5, 1}, Qt::magenta},
-            {{4, 1, 0}, Qt::magenta},
-            {{2, 6, 7}, Qt::gray},
-            {{2, 7, 3}, Qt::gray}
-
-
-
-//            {{0,1,3}, Qt::blue},
-//            {{1,2,3}, Qt::blue},
-
-//            {{0,3,4}, Qt::green},
-//            {{1,0,5}, Qt::red},
-//            {{2,1,6}, Qt::gray},
-//            {{3,2,7}, Qt::magenta},
-
-//            {{7,4,3}, Qt::green},
-//            {{4,5,0}, Qt::red},
-//            {{5,6,1}, Qt::gray},
-//            {{6,7,2}, Qt::magenta},
-
-//            {{5,4,7}, Qt::yellow},
-//            {{5,6,7}, Qt::yellow}
-        }
-    };
 //    painter->setPen(QPen(Qt::black));
-    Figure* fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
-//    fig->Move({150, 150, 150});
-//    fig->Move({-100, -50, 20});
 
-    fig->RotateY(25);
-//    fig->RotateX(5);
-
-//    fig->Move({0, 0, 550});
-    fig->Move({5, 5, 15});
-    fig->Render();
 
     ui->draw_label->setPixmap(*scene);
 
@@ -109,6 +85,23 @@ MainWindow::~MainWindow()
 
 
 void MainWindow::on_pushButton_clicked() {
+//    delete scene;
+    ui->draw_label->setPalette(Qt::white);
+    scene->fill(QColor("transparent"));
+    scene->fill(QColor(Qt::white));
+
+    Figure* fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
+//    fig->Move({150, 150, 150});
+//    fig->Move({-100, -50, 20});
+
+    fig->RotateY(i++*M_PI/180);
+//    fig->RotateX(5);
+
+//    fig->Move({0, 0, 550});
+    fig->Move({3, 4, 15});
+    fig->Render();
+//    delete fig;
+
 //    QVector3D point1 = {0,0,0};
 //    QVector3D point2 = {1,0,0};
 //    QVector3D point3 = {0,1,1};
@@ -118,8 +111,9 @@ void MainWindow::on_pushButton_clicked() {
 //    Parallelepipe* fig = new Parallelepipe(painter, point1, point2, point3);
 //    fig->Draw();
 //    std::cout << "Real point is: " << painter << std::endl;
-//    ui->draw_label->setPixmap(*scene);
-//    std::cout << "sadf" << std::endl;
+
+    ui->draw_label->setPixmap(*scene);
+    std::cout << "sadf" << std::endl;
 
 
 }

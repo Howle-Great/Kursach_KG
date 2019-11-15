@@ -16,7 +16,6 @@
 
 #include "triang_points.h"
 
-using std::vector;
 using namespace std;
 
 class Figure
@@ -63,36 +62,36 @@ private:
         painter->drawLine(P2.x(), P2.y(), P0.x(), P0.y());
     }
 
-    void DrawFilledTriangle(QVector3D P0, QVector3D P1, QVector3D P2, int* zbuffer) {
+    void DrawFilledTriangle(QVector3D P0, QVector3D P1, QVector3D P2, float** zbuffer) {
         if (P0.y()==P1.y() && P0.y()==P2.y()) return; // если точка
         // сортируем точки по вертикали, P0, P1, P2 от меньшего к большему
         if (P0.y()>P1.y()) std::swap(P0, P1);
         if (P0.y()>P2.y()) std::swap(P0, P2);
         if (P1.y()>P2.y()) std::swap(P1, P2);
-        int total_height = P2.y()-P0.y();
-        for (int i=0; i<total_height; i++) {
-            bool second_half = i>P1.y()-P0.y() || P1.y()==P0.y();
+        int total_height = roundf(P2.y() - P0.y());
+        for (int i = 0; i < total_height; i++) {
+            bool second_half = i > roundf(P1.y() - P0.y()) || P1.y()==P0.y();
 
             int segment_height;
             if (second_half) {
-                segment_height = P2.y() - P1.y();
+                segment_height = roundf(P2.y() - P1.y());
             } else {
-                segment_height = P1.y() - P0.y();
+                segment_height = roundf(P1.y() - P0.y());
             }
 
-            float alpha = (float)i/total_height;
-            float beta  = (float)(i-(second_half ? P1.y()-P0.y() : 0))/segment_height; // be careful: with above conditions no division by zero here
-            QVector3D A = P0 + QVector3D(P2-P0)*alpha;  // текущий сдвиг по осям x, y
-            QVector3D B = second_half ? P1 + QVector3D(P2-P1)*beta : P0 + QVector3D(P1-P0)*beta;
+            float alpha = ((float)(i) / (float)(total_height));
+            float beta  = ((float)(i)-(second_half ? roundf(P1.y() - P0.y()) : 0))/(float)(segment_height); // be careful: with above conditions no division by zero here
+            QVector3D A = P0 + QVector3D(P2-P0)*(float)(alpha);  // текущий сдвиг по осям x, y
+            QVector3D B = second_half ? P1 + QVector3D(P2-P1)*(float)(beta) : P0 + QVector3D(P1-P0)*(float)(beta);
 
             if (A.x() > B.x()) std::swap(A, B);
-            for (int j=A.x(); j<=B.x(); j++) {
-                float phi = B.x()==A.x() ? 1. : (float)(j-A.x())/(float)(B.x()-A.x());
+            for (int j = roundf(A.x()); j <= roundf(B.x()); j++) {
+                float phi = B.x() == A.x() ? 1. : (float)(j - A.x()) / (float)(B.x() - A.x());
                 QVector3D P = QVector3D(A) + QVector3D(B-A)*phi;
-                int idx = P.x() + P.y() * canvas.width();
-                if (zbuffer[idx] < P.z()) {
-                    zbuffer[idx] = P.z();
-                    painter->drawPoint(P.x(), P.y());
+                if (zbuffer[int(roundf(P.x()))][int(roundf(P.y()))] < (P.z())) {
+                    zbuffer[int(roundf(P.x()))][int(roundf(P.y()))] = (P.z());
+                    painter->drawPoint((P.x()), (P.y()));
+//                    cout << "( " << roundf(P.x()) << ", " << roundf(P.y()) << " ), ";
                 }
             }
         }
