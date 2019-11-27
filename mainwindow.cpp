@@ -68,28 +68,69 @@ MainWindow::MainWindow(QWidget *parent) :
 
     painter = new QPainter(scene);
     painter->setPen(QPen(Qt::black));
-//    painter->drawLine(0,0,200,200);
-//    GenerateCylinder(1, 1, 0, 0, 360);
 
-//    painter->setPen(QPen(Qt::black));
+
     Figure* fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
-//    fig->Move({150, 150, 150});
-//    fig->Move({-100, -50, 20});
+//    fig->ReRender(xAngle, yAngle, zAngle, indent);
+    if (xAngle != 0) fig->RotateX(xAngle*M_PI/180);
+    if (yAngle != 0) fig->RotateY(yAngle*M_PI/180);
+    if (zAngle != 0) fig->RotateZ(zAngle*M_PI/180);
 
-//    fig->RotateY(i*M_PI/180);
-//    fig->RotateX(5);
+    if (indent != QVector3D(0,0,0)) {
+        fig->Move(indent);
+    }
 
-//    fig->Move({0, 0, 550});
-    fig->Move({0, 0, 15});
     fig->Render();
 
     ui->draw_label->setPixmap(*scene);
-
+//    delete fig;
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::keyPressEvent(QKeyEvent* event) {
+
+    ui->draw_label->setPalette(Qt::white);
+    scene->fill(QColor("transparent"));
+    scene->fill(QColor(Qt::white));
+
+    switch (event->key()) {
+        case Qt::Key_W:
+            xAngle++;
+            break;
+        case Qt::Key_S:
+            xAngle--;
+            break;
+        case Qt::Key_A:
+            yAngle++;
+            break;
+        case Qt::Key_D:
+            yAngle--;
+            break;
+        case Qt::Key_Q:
+            zAngle++;
+            break;
+        case Qt::Key_E:
+            zAngle--;
+            break;
+
+    }
+
+    Figure* fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
+    if (xAngle != 0) fig->RotateX(xAngle*M_PI/180);
+    if (yAngle != 0) fig->RotateY(yAngle*M_PI/180);
+    if (zAngle != 0) fig->RotateZ(zAngle*M_PI/180);
+
+    if (indent != QVector3D(0,0,0)) {
+        fig->Move(indent);
+    }
+
+    fig->Render();
+    ui->draw_label->setPixmap(*scene);
+//    delete fig;
 }
 
 
@@ -100,14 +141,15 @@ void MainWindow::on_pushButton_clicked() {
     scene->fill(QColor(Qt::white));
 
     Figure* fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
-//    fig->Move({150, 150, 150});
-//    fig->Move({-100, -50, 20});
+//    fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
+    if (xAngle != 0) fig->RotateX(xAngle*M_PI/180);
+    if (yAngle != 0) fig->RotateY(yAngle*M_PI/180);
+    if (zAngle != 0) fig->RotateZ(zAngle*M_PI/180);
 
-    fig->RotateY(i++*M_PI/180);
-    fig->RotateX(5);
+    if (indent != QVector3D(0,0,0)) {
+        fig->Move(indent);
+    }
 
-//    fig->Move({0, 0, 550});
-    fig->Move({0, 0, 15});
     fig->Render();
 //    delete fig;
 
@@ -123,6 +165,4 @@ void MainWindow::on_pushButton_clicked() {
 
     ui->draw_label->setPixmap(*scene);
     std::cout << "sadf" << std::endl;
-
-
 }

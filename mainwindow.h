@@ -8,6 +8,8 @@
 #include <QColor>
 #include <QSize>
 
+#include <QKeyEvent>
+
 #include <cmath>
 
 #include "figure.h"
@@ -26,14 +28,21 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void keyPressEvent(QKeyEvent* event);
+
 private slots:
     void on_pushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
-    int i = 0;
     QPixmap *scene;
     QPainter *painter;
+//    Figure* fig;
+
+    int xAngle = 0;
+    int yAngle = 0;
+    int zAngle = 0;
+    QVector3D indent = QVector3D(0, 0, 15);
 
     QSize Canvas = QSize(900, 900);
     QSize VirtualCanvas = QSize(1, 1);
