@@ -68,34 +68,31 @@ private:
              << "( " << P1.x() << ", " << P1.y() << " ), "
              << "( " << P2.x() << ", " << P2.y() << " ), "<< endl;
 
-        int total_height = roundf(P2.y() - P0.y());
-        for (int i = 0; i < total_height; i++) {
-            bool second_half = i > roundf(P1.y() - P0.y()) || P1.y()==P0.y();
+        float total_height = P2.y() - P0.y();
+        for (int i = 0; i < roundf(total_height); i++) {
 
-            int segment_height;
-            if (second_half) {
-                segment_height = roundf(P2.y() - P1.y());
-            } else {
-                segment_height = roundf(P1.y() - P0.y());
-            }
+            bool second_half = i > (P1.y() - P0.y()) || P1.y() == P0.y();
+            float segment_height = second_half ? (P2.y() - P1.y()) : (P1.y() - P0.y());
 
-            float alpha = ((float)(i) / (float)(total_height));
-            float beta  = ((float)(i)-(second_half ? roundf(P1.y() - P0.y()) : 0))/(float)(segment_height); // be careful: with above conditions no division by zero here
-            QVector3D A = P0 + QVector3D(P2-P0)*(float)(alpha);  // текущий сдвиг по осям x, y
-            QVector3D B = second_half ? P1 + QVector3D(P2-P1)*(float)(beta) : P0 + QVector3D(P1-P0)*(float)(beta);
+            float alpha = ((float)(i) / total_height);
+            float beta  = ((float)(i)-(second_half ? P1.y() - P0.y() : 0))/segment_height; // be careful: with above conditions no division by zero here
 
+            QVector3D A = P0 + QVector3D(P2-P0) * alpha;  // текущий сдвиг по осям x, y
+            QVector3D B = second_half ? P1 + QVector3D(P2-P1) * beta : P0 + QVector3D(P1-P0) * beta;
+            cout << "QVector3D B\n";
             if (A.x() > B.x()) std::swap(A, B);
-            for (int j = roundf(A.x()); j <= roundf(B.x()); j++) {
-                float phi = B.x() == A.x() ? 1. : (float)(j - A.x()) / (float)(B.x() - A.x());
-                QVector3D P = QVector3D(A) + QVector3D(B-A)*phi;
-                if (zbuffer[int(roundf(P.x()))][int(roundf(P.y()))] > (P.z())) {
-                    zbuffer[int(roundf(P.x()))][int(roundf(P.y()))] = (P.z());
-                    painter->drawPoint(int(roundf(P.x())), int(roundf(P.y())));
-//                    cout << "( " << roundf(P.x()) << ", " << roundf(P.y()) << " ), ";
+            for (int j = A.x(); j <= B.x(); j++) {
+                float phi = B.x() == A.x() ? 1. : (j - A.x()) / (float)(B.x() - A.x());
+                QVector3D P = QVector3D(A) + QVector3D(B-A) * phi;
+                cout << "( " << roundf(P.x()) << ", " << roundf(P.y()) << " ), ";
+                if (zbuffer[int(P.x())][int(P.y())] > P.z()) {
+                    zbuffer[int(P.x())][int(P.y())] = P.z();
+                    painter->drawPoint(int(P.x()), int(P.y()));
+
                 }
             }
         }
-    }
+     }
 
 };
 
