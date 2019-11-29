@@ -1,54 +1,8 @@
-#include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include <iostream>
 
-
-void GenerateCylinder(float radius, float height, int Cx, int Cy, int grad) {
-    // в верхнем круге центр - 0я точка
-    // в нижнем круге центр - (grad + 1)я точка
-    vector<QVector3D> points(2*(grad + 1));
-    vector<Triangle> treangles(4*grad);
-    float x;
-    float y;
-    float z = 0;
-    // генерируем передний круг
-    points[0] = QVector3D(Cx, Cy, z);
-    for (int var = 0; var < grad; var++) {
-        x = Cx + radius*cos(var*(360/grad));
-        y = Cy + radius*sin(var*(360/grad));
-        points.push_back(QVector3D(x, y, z));
-    }
-    // генерируем задний круг
-    z = height;
-    points[grad + 1] = QVector3D(Cx, Cy, z);
-    for (int var = 0; var < grad; var++) {
-        x = Cx + radius*cos(var*(360/grad));
-        y = Cy + radius*sin(var*(360/grad));
-        points.push_back(QVector3D(x, y, z));
-    }
-    // соединяем треугольниками верхний круг
-    int centerPoint = 0;
-    for (int var = 1; var < grad; var++) {
-        treangles.push_back({{centerPoint, var, var + 1}, Qt::green});
-    }
-    // соединяем треугольниками нижний круг
-    centerPoint = grad;
-    for (int var = grad + 1; var < 2*grad; var++) {
-        treangles.push_back({{centerPoint, var, var + 1}, Qt::red});
-    }
-    // соединяем треугольниками боковую часть цилиндра
-    for (int var = grad + 1; var < 2*grad; var++) {
-        treangles.push_back({{var, var + 1, var + grad + 1}, Qt::blue});
-        treangles.push_back({{var + grad + 1, var + grad + 2, var + 1}, Qt::blue});
-    }
-
-    // Вывод в консоль
-    std::cout << "sadfsf" << endl;
-    std::cout << "Color: " << Qt::blue << endl;
-//    for (int var = 0; var < points.size(); var++) {
-
-//    }
-}
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include "filemanager.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -57,8 +11,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     ui->setupUi(this);
-
-    ui->draw_label->setPalette(Qt::white);
     ui->draw_label->setMouseTracking(true);
     this->setMouseTracking(true);
 
@@ -69,9 +21,11 @@ MainWindow::MainWindow(QWidget *parent) :
     painter = new QPainter(scene);
     painter->setPen(QPen(Qt::black));
 
+    FileManager file("objects/cylinder.obj");
+    Object = file.Read();
 
-    Figure* fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
-//    fig->ReRender(xAngle, yAngle, zAngle, indent);
+    Figure* fig = new Figure(Object, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
+
     if (xAngle != 0) fig->RotateX(xAngle*M_PI/180);
     if (yAngle != 0) fig->RotateY(yAngle*M_PI/180);
     if (zAngle != 0) fig->RotateZ(zAngle*M_PI/180);
@@ -83,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     fig->Render();
 
     ui->draw_label->setPixmap(*scene);
-//    delete fig;
+
 }
 
 MainWindow::~MainWindow()
@@ -110,16 +64,10 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
         case Qt::Key_D:
             yAngle--;
             break;
-        case Qt::Key_Q:
-            zAngle++;
-            break;
-        case Qt::Key_E:
-            zAngle--;
-            break;
 
     }
 
-    Figure* fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
+    Figure* fig = new Figure(Object, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
     if (xAngle != 0) fig->RotateX(xAngle*M_PI/180);
     if (yAngle != 0) fig->RotateY(yAngle*M_PI/180);
     if (zAngle != 0) fig->RotateZ(zAngle*M_PI/180);
@@ -130,18 +78,33 @@ void MainWindow::keyPressEvent(QKeyEvent* event) {
 
     fig->Render();
     ui->draw_label->setPixmap(*scene);
-//    delete fig;
+
 }
 
 
 void MainWindow::on_pushButton_clicked() {
-//    delete scene;
+    string objectFilePath;
+
+    if (ui->parallelepiped->isChecked()) {
+        objectFilePath = "objects/parallelepipe.obj";
+    } else if (ui->cube->isChecked()){
+        objectFilePath = "objects/cube.obj";
+    } else if (ui->cylinder->isChecked()){
+        objectFilePath = "objects/cylinder.obj";
+    }
+
+    FileManager file(objectFilePath);
+    Object = file.Read();
+
     ui->draw_label->setPalette(Qt::white);
     scene->fill(QColor("transparent"));
     scene->fill(QColor(Qt::white));
 
-    Figure* fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
-//    fig = new Parallelepipe(TP_Parallelepipe, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
+    xAngle = 0;
+    yAngle = 0;
+    zAngle = 0;
+
+    Figure* fig = new Figure(Object, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
     if (xAngle != 0) fig->RotateX(xAngle*M_PI/180);
     if (yAngle != 0) fig->RotateY(yAngle*M_PI/180);
     if (zAngle != 0) fig->RotateZ(zAngle*M_PI/180);
@@ -151,18 +114,5 @@ void MainWindow::on_pushButton_clicked() {
     }
 
     fig->Render();
-//    delete fig;
-
-//    QVector3D point1 = {0,0,0};
-//    QVector3D point2 = {1,0,0};
-//    QVector3D point3 = {0,1,1};
-//    painter->setPen(QPen(Qt::black));
-//    std::cout << "RealasdasdAdsadADAD point is: ";
-//    std::cout << "Real point is: " << painter << std::endl;
-//    Parallelepipe* fig = new Parallelepipe(painter, point1, point2, point3);
-//    fig->Draw();
-//    std::cout << "Real point is: " << painter << std::endl;
-
     ui->draw_label->setPixmap(*scene);
-    std::cout << "sadf" << std::endl;
 }

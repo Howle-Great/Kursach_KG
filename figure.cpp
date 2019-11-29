@@ -55,9 +55,6 @@ void Figure::Move(QVector3D shift)
 {
     for (auto i = 0; i < structure.points.size(); i++) {
         structure.points[i] += shift;
-//        structure.points[i].setX(structure.points[i].x() + shift.x());
-//        structure.points[i].setY(structure.points[i].y() + shift.y());
-//        structure.points[i].setZ(structure.points[i].z() + shift.z());
     }
 }
 
@@ -92,23 +89,6 @@ void Figure::RotateZ(float angle)
     }
 }
 
-void Figure::ReRender(int &xAngle, int &yAngle, int &zAngle, QVector3D indent) {
-    cout << xAngle << "\t" << yAngle << "\t" << zAngle << "\n";
-    if (xAngle != 0) RotateX(xAngle*M_PI/180);
-    if (yAngle != 0) RotateY(yAngle*M_PI/180);
-    if (zAngle != 0) RotateZ(zAngle*M_PI/180);
-
-    if (indent != QVector3D(0,0,0)) {
-        Move(indent);
-    }
-
-    Render();
-
-//    xAngle = 0;
-//    yAngle = 0;
-//    zAngle = 0;
-}
-
 
 void Figure::DrawFilledTriangle(QVector3D P0, QVector3D P1, QVector3D P2, float** zbuffer) {
     if (P0.y()==P1.y() && P0.y()==P2.y()) return; // если точка
@@ -116,9 +96,9 @@ void Figure::DrawFilledTriangle(QVector3D P0, QVector3D P1, QVector3D P2, float*
     if (P0.y()>P1.y()) std::swap(P0, P1);
     if (P0.y()>P2.y()) std::swap(P0, P2);
     if (P1.y()>P2.y()) std::swap(P1, P2);
-//    cout << "( " << P0.x() << ", " << P0.y() << " ), "
-//         << "( " << P1.x() << ", " << P1.y() << " ), "
-//         << "( " << P2.x() << ", " << P2.y() << " ), "<< endl;
+    cout << "( " << P0.x() << ", " << P0.y() << " ), "
+         << "( " << P1.x() << ", " << P1.y() << " ), "
+         << "( " << P2.x() << ", " << P2.y() << " ), "<< endl;
 
     float total_height = P2.y() - P0.y();
     for (int i = 0; i < roundf(total_height); i++) {
@@ -131,7 +111,6 @@ void Figure::DrawFilledTriangle(QVector3D P0, QVector3D P1, QVector3D P2, float*
 
         QVector3D A = P0 + QVector3D(P2-P0) * alpha;  // текущий сдвиг по осям x, y
         QVector3D B = second_half ? P1 + QVector3D(P2-P1) * beta : P0 + QVector3D(P1-P0) * beta;
-//        cout << "QVector3D B\n";
         if (A.x() > B.x()) std::swap(A, B);
         for (int j = A.x(); j <= B.x(); j++) {
             float phi = B.x() == A.x() ? 1. : (j - A.x()) / (float)(B.x() - A.x());

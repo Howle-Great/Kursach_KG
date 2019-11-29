@@ -17,14 +17,16 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     figure.cpp \
+    figuresgenerator.cpp \
+    filemanager.cpp \
     main.cpp \
-    mainwindow.cpp \
-    parallelepipe.cpp
+    mainwindow.cpp
 
 HEADERS += \
     figure.h \
+    figuresgenerator.h \
+    filemanager.h \
     mainwindow.h \
-    parallelepipe.h \
     triang_points.h
 
 FORMS += \

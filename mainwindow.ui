@@ -44,21 +44,21 @@
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QRadioButton" name="radioButton_2">
+      <widget class="QRadioButton" name="parallelepiped">
        <property name="text">
         <string>Параллелепипед</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton">
+      <widget class="QRadioButton" name="cube">
        <property name="text">
         <string>Куб</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_3">
+      <widget class="QRadioButton" name="cylinder">
        <property name="text">
         <string>Цилиндр</string>
        </property>

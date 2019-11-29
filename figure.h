@@ -32,8 +32,6 @@ public:
     void RotateY(float angle);
     void RotateZ(float angle);
 
-    void ReRender(int &xAngle, int &yAngle, int &zAngle, QVector3D indent);
-
 private:
     TriangPoints structure; // структура объекта
     QPainter *painter;
