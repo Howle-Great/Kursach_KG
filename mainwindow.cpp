@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     painter = new QPainter(scene);
     painter->setPen(QPen(Qt::black));
 
-    FileManager file("objects/cylinder.obj");
+    FileManager file("/cylinder.obj");
     Object = file.Read();
 
     Figure* fig = new Figure(Object, painter, VirtualCanvas, Canvas, DistanceToVirtualCanvas);
@@ -86,11 +86,11 @@ void MainWindow::on_pushButton_clicked() {
     string objectFilePath;
 
     if (ui->parallelepiped->isChecked()) {
-        objectFilePath = "objects/parallelepipe.obj";
+        objectFilePath = "/parallelepipe.obj";
     } else if (ui->cube->isChecked()){
-        objectFilePath = "objects/cube.obj";
+        objectFilePath = "/cube.obj";
     } else if (ui->cylinder->isChecked()){
-        objectFilePath = "objects/cylinder.obj";
+        objectFilePath = "/cylinder.obj";
     }
 
     FileManager file(objectFilePath);

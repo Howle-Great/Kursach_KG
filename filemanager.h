@@ -5,16 +5,23 @@
 #include <fstream>
 #include <sstream>
 
+#include <QDir>
+
 #include "triang_points.h"
 
 using namespace std;
 
 class FileManager {
 public:
-    FileManager(string name) : fileName(prefix + name) {}
+    FileManager(string name) :
+        fileName(prefix + name),
+        prefix(QDir::current().path().toStdString())
+    {
+        cout << prefix << endl;
+    }
     ~FileManager() {}
 
-    const string prefix = "/Users/howle/prog/2019.2/myProjects/CG/kursachFirst/";
+    const string prefix;// = "/Users/howle/prog/2019.2/myProjects/CG/kursachFirst";
     string fileName;
 
     void Write(TriangPoints fig);
